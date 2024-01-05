@@ -39,7 +39,7 @@ function TabStack(navigation) {
     return (
         <Tab.Navigator
         initialRouteName="Home"
-        tabBarOptions={{
+        screenOptions={{
             activeTintColor: "blue",
             inactiveTintColor: "black",
             style: {

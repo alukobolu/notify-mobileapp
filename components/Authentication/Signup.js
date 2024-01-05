@@ -19,7 +19,7 @@ const Signup = ({ navigation,route }) => {
         await SecureStore.setItemAsync(key, value);
     }
     function register(){
-        console.log('yes')
+        console.log(expoPushToken)
         let body = {
             'firstname':name.toLocaleLowerCase(),
             'email':email.toLocaleLowerCase(),

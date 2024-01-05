@@ -66,9 +66,9 @@ const Home = ({ navigation,route }) => {
                 {Page()}
             </View>
             <Text style={{color:'red'}}>{error}</Text>
-            {/* <TouchableOpacity  onPress={()=> logout()} >
+            <TouchableOpacity  onPress={()=> logout()} >
                 <Text style={stylepage.h1} >Logout</Text>
-            </TouchableOpacity>  */}
+            </TouchableOpacity> 
             <View style={stylepage.logout}>
                 <TouchableOpacity style={stylepage.logoutBotton} onPress={()=> send()} >
                     <Text style={stylepage.Buttontext} >Send</Text>
