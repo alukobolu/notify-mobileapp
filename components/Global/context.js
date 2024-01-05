@@ -1,15 +1,13 @@
-import React, { useState, useEffect, useRef, createContext} from "react";
+import React, { useState, useEffect, useRef, createContext } from "react";
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
-import * as SecureStore from 'expo-secure-store';
-import axios from 'axios';
-import * as Device from 'expo-device';
+import * as SecureStore from "expo-secure-store";
+import axios from "axios";
+import * as Device from "expo-device";
 
+const Context = createContext();
 
-const Context = createContext()
-
-const Provider = ( { children } ) => {
-
+const Provider = ({ children }) => {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
@@ -19,7 +17,7 @@ const Provider = ( { children } ) => {
   });
   // async function registerForPushNotificationsAsync() {
   //   let token;
-  
+
   //   if (Platform.OS === 'android') {
   //     await Notifications.setNotificationChannelAsync('default', {
   //       name: 'default',
@@ -28,7 +26,7 @@ const Provider = ( { children } ) => {
   //       lightColor: '#FF231F7C',
   //     });
   //   }
-  
+
   //   if (Device.isDevice) {
   //     const { status: existingStatus } = await Notifications.getPermissionsAsync();
   //     let finalStatus = existingStatus;
@@ -45,87 +43,74 @@ const Provider = ( { children } ) => {
   //   } else {
   //     alert('Must use physical device for Push Notifications');
   //   }
-  
+
   //   return token;
   // }
   async function registerForPushNotificationsAsync() {
     let token;
-  
-    if (Platform.OS === 'android') {
-      Notifications.setNotificationChannelAsync('default', {
-        name: 'default',
+
+    if (Platform.OS === "android") {
+      Notifications.setNotificationChannelAsync("default", {
+        name: "default",
         importance: Notifications.AndroidImportance.MAX,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: '#FF231F7C',
+        lightColor: "#FF231F7C",
       });
     }
-  
+
     if (Device.isDevice) {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
-      if (existingStatus !== 'granted') {
+      if (existingStatus !== "granted") {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
       }
-      if (finalStatus !== 'granted') {
-        alert('Failed to get push token for push notification!');
+      if (finalStatus !== "granted") {
+        alert("Failed to get push token for push notification!");
         return;
       }
       token = await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig.extra.eas.projectId,
+        projectId: "3bd73e48-b442-4f5a-b0a7-cfea291e9774",
       });
-      console.log(token);
+      console.log(token, "this is token");
     } else {
-      alert('Must use physical device for Push Notifications');
+      alert("Must use physical device for Push Notifications");
     }
-  
-    return token.data;
+
+    return token;
   }
-  
+
   const notificationListener = useRef();
   const responseListener = useRef();
   const [expoPushToken, setExpoPushToken] = useState("");
   const [notification, setNotification] = useState(false);
-  const [ isRegistered, setIsRegistered ] = useState(false)
-  const [ domain, setDomain ] = useState("http://192.168.1.170:8000")
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [domain, setDomain] = useState("http://192.168.1.170:8000");
   const [authToken, setAuthToken] = useState("");
   const [notificationList, setNotificationList] = useState([]);
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
 
-  async function getValueFor(tokenkey,emailkey) {
+  async function getValueFor(tokenkey, emailkey) {
     let tokenresult = await SecureStore.getItemAsync(tokenkey);
     let emailresult = await SecureStore.getItemAsync(emailkey);
     if (tokenresult) {
       setIsRegistered(true);
       setAuthToken(tokenresult);
       setEmail(emailresult);
-      return tokenresult 
+      return tokenresult;
     } else {
-      return null
+      return null;
     }
   }
   useEffect(() => {
-    getValueFor("token","email").then((result) => {
-      if (result != null){
-        console.log('get notifications')
-        let headers = {
-          "Authorization": "Token " + authToken, //Your API key goes in here
-        }
-        axios.get(`${domain}/notification/get/`,{headers: headers})
-        .then(function (response) {
-          // handle success
-          setNotificationList(response.data)
-          console.log(notificationList)
-        })
-        .catch(function (error) {
-          // handle error
-          console.log(error.message);
-        });
-      }
-    });
     registerForPushNotificationsAsync().then((token) => {
-      setExpoPushToken(token);
+      setExpoPushToken(() => token);
     });
+
+    console.log("--------------");
+    console.log(expoPushToken);
+    console.log("--------------");
 
     // This listener is fired whenever a notification is received while the app is foregrounded
     notificationListener.current =
@@ -144,7 +129,7 @@ const Provider = ( { children } ) => {
       Notifications.removeNotificationSubscription(responseListener.current);
     };
   }, []);
-  
+
   const globalContext = {
     isRegistered,
     setIsRegistered,
@@ -155,11 +140,10 @@ const Provider = ( { children } ) => {
     email,
     setEmail,
     notificationList,
-    setNotificationList
-  }
+    setNotificationList,
+  };
 
-  return <Context.Provider value={globalContext}>{children}</Context.Provider>
-
+  return <Context.Provider value={globalContext}>{children}</Context.Provider>;
 };
 
 export { Context, Provider };
